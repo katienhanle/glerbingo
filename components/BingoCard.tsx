@@ -18,7 +18,7 @@ export default function BingoCard() {
   if (!ready) return null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center px-4 py-8">
+    <main className="flex min-h-screen flex-col items-center px-4 pb-8 pt-20">
       <Mailbox prizes={prizes} />
 
       <h1
