@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { SquareDef } from "@/lib/squares";
+import { shareImageFile } from "@/lib/share";
 
 type Props = {
   square: SquareDef;
@@ -20,12 +21,29 @@ export default function PhotoCaptureModal({
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [showSaveHint, setShowSaveHint] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chosen = e.target.files?.[0];
     if (!chosen) return;
     setFile(chosen);
     setPreview(URL.createObjectURL(chosen));
+    setShowSaveHint(false);
+  };
+
+  const handleSaveToPhotos = async () => {
+    if (!file) return;
+    setSharing(true);
+    setShowSaveHint(false);
+    try {
+      const shared = await shareImageFile(file, square.label);
+      if (!shared) setShowSaveHint(true);
+    } catch {
+      setShowSaveHint(true);
+    } finally {
+      setSharing(false);
+    }
   };
 
   const handleSave = async () => {
@@ -77,6 +95,24 @@ export default function PhotoCaptureModal({
           >
             {displayPhoto ? "Retake photo" : "Take photo"}
           </button>
+
+          {file && (
+            <button
+              type="button"
+              onClick={handleSaveToPhotos}
+              disabled={sharing}
+              className="rounded-full border-2 border-[var(--color-ink)] py-2.5 text-sm font-medium disabled:opacity-40"
+            >
+              {sharing ? "Opening…" : "Save to Camera Roll"}
+            </button>
+          )}
+
+          {showSaveHint && (
+            <p className="text-center text-xs text-[var(--color-ink)]/70">
+              Long-press the photo above and tap &ldquo;Add to Photos&rdquo; to
+              save it.
+            </p>
+          )}
 
           <div className="flex gap-2">
             <button
