@@ -5,13 +5,22 @@ import { SQUARES } from "@/lib/squares";
 import { useGameState } from "@/lib/useGameState";
 import Square from "./Square";
 import PhotoCaptureModal from "./PhotoCaptureModal";
+import ConfirmRemovePhotoModal from "./ConfirmRemovePhotoModal";
 import PrizePopup from "./PrizePopup";
 import Mailbox from "./Mailbox";
 
 export default function BingoCard() {
-  const { ready, photos, prizes, addPhoto, activePrizePopup, dismissPrizePopup } =
-    useGameState();
+  const {
+    ready,
+    photos,
+    prizes,
+    addPhoto,
+    removePhoto,
+    activePrizePopup,
+    dismissPrizePopup,
+  } = useGameState();
   const [activeSquareId, setActiveSquareId] = useState<number | null>(null);
+  const [removeSquareId, setRemoveSquareId] = useState<number | null>(null);
 
   const activeSquare = SQUARES.find((s) => s.id === activeSquareId) ?? null;
 
@@ -43,6 +52,7 @@ export default function BingoCard() {
               square={square}
               photo={photos[square.id]}
               onTap={() => setActiveSquareId(square.id)}
+              onRemove={() => setRemoveSquareId(square.id)}
             />
           ))}
         </div>
@@ -59,6 +69,16 @@ export default function BingoCard() {
 
       {activePrizePopup && (
         <PrizePopup tier={activePrizePopup} onClose={dismissPrizePopup} />
+      )}
+
+      {removeSquareId !== null && (
+        <ConfirmRemovePhotoModal
+          onCancel={() => setRemoveSquareId(null)}
+          onConfirm={() => {
+            removePhoto(removeSquareId);
+            setRemoveSquareId(null);
+          }}
+        />
       )}
     </main>
   );

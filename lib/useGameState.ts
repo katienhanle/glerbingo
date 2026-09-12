@@ -73,6 +73,15 @@ export function useGameState() {
     });
   }, []);
 
+  const removePhoto = useCallback((squareId: number) => {
+    setState((prev) => {
+      if (!prev) return prev;
+      const nextPhotos = { ...prev.photos };
+      delete nextPhotos[squareId];
+      return { ...prev, photos: nextPhotos };
+    });
+  }, []);
+
   const dismissPrizePopup = useCallback(
     () => setPrizeQueue((prev) => prev.slice(1)),
     []
@@ -83,6 +92,7 @@ export function useGameState() {
     photos: state?.photos ?? {},
     prizes,
     addPhoto,
+    removePhoto,
     activePrizePopup: prizeQueue[0] ?? null,
     dismissPrizePopup,
   };
