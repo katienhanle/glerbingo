@@ -3,11 +3,13 @@
 import { useRef, useState } from "react";
 import { SquareDef } from "@/lib/squares";
 import { shareImageFile } from "@/lib/share";
+import ConfirmRemovePhotoModal from "./ConfirmRemovePhotoModal";
 
 type Props = {
   square: SquareDef;
   existingPhoto?: string;
   onSave: (file: File) => Promise<void>;
+  onRemove: () => void;
   onClose: () => void;
 };
 
@@ -15,6 +17,7 @@ export default function PhotoCaptureModal({
   square,
   existingPhoto,
   onSave,
+  onRemove,
   onClose,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,6 +26,7 @@ export default function PhotoCaptureModal({
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [showSaveHint, setShowSaveHint] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chosen = e.target.files?.[0];
@@ -56,6 +60,14 @@ export default function PhotoCaptureModal({
 
   const displayPhoto = preview ?? existingPhoto;
 
+  const handleConfirmRemove = () => {
+    onRemove();
+    setFile(null);
+    setPreview(null);
+    setShowRemoveConfirm(false);
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-sm rounded-2xl border-2 border-[var(--color-ink)] bg-[var(--color-card)] p-5">
@@ -63,7 +75,7 @@ export default function PhotoCaptureModal({
           {square.label}
         </h2>
 
-        <div className="mt-4 flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--color-ink)]/40 bg-black/5">
+        <div className="relative mt-4 flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--color-ink)]/40 bg-black/5">
           {displayPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -75,6 +87,16 @@ export default function PhotoCaptureModal({
             <span className="px-6 text-center text-sm text-[var(--color-ink)]/60">
               Take or choose a photo as evidence
             </span>
+          )}
+          {displayPhoto && (
+            <button
+              type="button"
+              onClick={() => setShowRemoveConfirm(true)}
+              aria-label="Remove photo"
+              className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-[var(--color-ink)] shadow"
+            >
+              ✕
+            </button>
           )}
         </div>
 
@@ -133,6 +155,13 @@ export default function PhotoCaptureModal({
           </div>
         </div>
       </div>
+
+      {showRemoveConfirm && (
+        <ConfirmRemovePhotoModal
+          onCancel={() => setShowRemoveConfirm(false)}
+          onConfirm={handleConfirmRemove}
+        />
+      )}
     </div>
   );
 }
